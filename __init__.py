@@ -1,4 +1,5 @@
-"""This __init__ file contains all functionality of creating report and exporting 
+"""
+This __init__ file contains all functionality of creating report and exporting 
 created report to Confluence.
 
 To run this properly you need to add parameter -c or --config with name of configuration ini file
@@ -33,13 +34,15 @@ To check what parameters are available type -h or --help.
 # allure.dynamic.description(
 #     f"""[REQUIREMENTS];
 #         If header appears there must be requirement name, e.g. LWZ-090;
-#         but this header is optionary;
+#         but this header is optional;
 #         [TEST NAME];
 #         There must be test name;
 #         [TEST DESCRIPTION];
 #         There must by test description;
 #         [EXPECTED RESULT];
-#         There must be expected result description;
+#         There must be expected result of the test;
+#         [ACTUAL RESULT];
+#         There must be actual result of the test;
 #         [TEST SETUP];
 #         There must be test setup;
 #         [COMMENTS];
@@ -47,7 +50,6 @@ To check what parameters are available type -h or --help.
 #         """)
 # 
 # ---------------------------------------------------------------------------------------------
-
 
 # ---------------------------------- CONFIG_NAME.INI TEMPLATE ---------------------------------
 # 
