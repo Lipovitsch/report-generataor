@@ -11,7 +11,8 @@ CURRENT_PATH = os.getcwd() + "\\Test_data"
 
 
 def delete_files_in_dir(dir_path: str):
-    """Method to delete all files in directory specified by dir_path
+    """
+    Method to delete all files in directory specified by dir_path
     """
     if os.path.exists(dir_path):
         file_list = [f for f in os.listdir(dir_path)]
@@ -32,7 +33,8 @@ def sort_csv(path: str):
 
 
 class CreateReport:
-    """To generate report use generate_report(). This will generate report in directory specified by folder_name.
+    """
+    To generate report use generate_report(). This will generate report in directory specified by folder_name.
     Report will be named "DD-MM-YYYY HH-MM-SS file_name.csv"
     """
 
@@ -42,7 +44,8 @@ class CreateReport:
         self.test_conditions = test_conditions
 
     def __print_allure_report_file(self, path_to_csv: str):
-        """This function prints out on a terminal report created in current run. Function can be skipped
+        """
+        This function prints out on a terminal report created in current run. Function can be skipped
         """
         # Number of spaces between columns "__|__" - two spaces on each side of "|"
         col_separate_spaces = 2
@@ -103,7 +106,8 @@ class CreateReport:
                 raise RuntimeError("An error occurred during checking csv file, possible lack of semicolon in test docstring. Open generated csv file to check error")
     
     def __rewrite_generated_report(self, path_to_csv: str):
-        """Copy files from allure-report to TEST_FOLDER_NAME and change name to DD-MM-YYYY HH-MM-SS TEST_FILE_NAME,
+        """
+        Copy files from allure-report to TEST_FOLDER_NAME and change name to DD-MM-YYYY HH-MM-SS TEST_FILE_NAME,
         also change newline characters in the test docstring to a character that represents the newline in html
         """
         with open(CURRENT_PATH + "\\allure-report\\data\\suites.csv", "r") as file_r:
@@ -119,7 +123,8 @@ class CreateReport:
             file_w.write(data_report)
 
     def generate_report(self):
-        """Generates report to directory named folder_name. Generated file name is "DD-MM-YYYY HH-MM-SS file_name.csv"
+        """
+        Generates report to directory named folder_name. Generated file name is "DD-MM-YYYY HH-MM-SS file_name.csv"
         """
         if not os.path.exists(CURRENT_PATH):
             os.mkdir(CURRENT_PATH)
