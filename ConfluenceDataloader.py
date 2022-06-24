@@ -18,6 +18,7 @@ DF_EM_START_CHAR = "///sem///"
 DF_EM_END_CHAR = "///eem///"
 DF_DIV_DISPLAY_START_CHAR = "///sdd///"
 DF_DIV_DISPLAY_END_CHAR = "///edd///"
+DF_TAB_CHAR = "///tab///"
 DF_REQUIREMENTS = []
 HTML_REQUIREMENTS = """<div class="content-wrapper"><p><ac:structured-macro ac:name="requirement" ac:schema-version="1" ac:macro-id="53ae0f9b-4084-4e31-88c3-aba88e1eec3b"><ac:parameter ac:name="spaceKey">LWZ</ac:parameter><ac:parameter ac:name="freetext">Link</ac:parameter><ac:parameter ac:name="type">LINK</ac:parameter><ac:parameter ac:name="key">%s</ac:parameter></ac:structured-macro></p></div>"""
 HTML_FAIL_CHAR = """
@@ -28,13 +29,13 @@ HTML_SUCCESS_CHAR = """
     <div class="content-wrapper">
     <p><ac:structured-macro ac:name="ry-test-result" ac:schema-version="1" ac:macro-id="7a735669-c8e8-4dad-99d6-3b9f37233d0a"><ac:parameter ac:name="status">(/) Success</ac:parameter></ac:structured-macro></p></div>
     """
-DOCSTRING_HEADERS = ["[REQUIREMENTS]", "[TEST NAME]", "[TEST DESCRIPTION]", "[EXPECTED RESULT]", "[TEST SETUP]", "[COMMENTS]"]
+DOCSTRING_HEADERS = ["[REQUIREMENTS]", "[TEST NAME]", "[TEST DESCRIPTION]", "[EXPECTED RESULT]", "[ACTUAL RESULT]", "[TEST SETUP]", "[COMMENTS]"]
 TABLE_HEADER = {
     "Requirements": "Requirements",
-    "Test Name": "Test Name",
     "Test Description": "Test Description",
     "Expected Result": "Expected Result",
-    "Result": "Result",
+    "Actual Result": "Actual Result",
+    "Result": "Status",
     "Tester": "Tester",
     "Date": "Date",
     "Test Setup": "Test Setup",
@@ -44,7 +45,8 @@ TABLE_HEADER = {
 
 
 def get_date():
-    """Method returns date DD.MM.YYYY as a string
+    """
+    Method returns date DD.MM.YYYY as a string
     """
     now = datetime.now()
     string_date = now.strftime("%d.%m.%Y")
@@ -53,11 +55,12 @@ def get_date():
 
 
 def search_test_name_html(html_data_frame: pd.DataFrame, test_name_to_sign_result: str):
-    """Search for hidden test name in dataframe generated from html table
+    """
+    Search for hidden test name in dataframe generated from html table
     To know characters description see signs_to_replace() method
     """
     for i in range(len(html_data_frame)):
-        test_name = html_data_frame.loc[i, TABLE_HEADER["Test Name"]]
+        test_name = html_data_frame.loc[i, TABLE_HEADER["Test Description"]]
         div_end = test_name.find(DF_DIV_DISPLAY_END_CHAR)
         if test_name[:div_end] == DF_DIV_DISPLAY_START_CHAR + test_name_to_sign_result:
             return i
@@ -65,7 +68,8 @@ def search_test_name_html(html_data_frame: pd.DataFrame, test_name_to_sign_resul
 
 
 def search_test_name_csv(csv_data_frame: pd.DataFrame, test_name_search: str):
-    """Search for the test name in the csv report file and return its row number
+    """
+    Search for the test name in the csv report file and return its row number
     """
     for i in range(len(csv_data_frame)):
         test_name = csv_data_frame.loc[i, "Name"]
@@ -74,7 +78,8 @@ def search_test_name_csv(csv_data_frame: pd.DataFrame, test_name_search: str):
 
 
 def search_div_requirement(conf_page_body: str):
-    """In html code of given Confluence page body search for string of characters 
+    """
+    In html code of given Confluence page body search for string of characters 
     that starts with <div and ends with </div> statement and contains "requirement" 
     keyword and return a list of these strings
     """
@@ -90,7 +95,8 @@ def search_div_requirement(conf_page_body: str):
 
 
 def search_content_outside_table(conf_page_body: str):
-    """In html code of given Confluence page body search for the table with at least 
+    """
+    In html code of given Confluence page body search for the table with at least 
     10 headers (because this is table with test cases), replace it with TEST_CASES_TABLE_CHAR
     and return html code with replaced table that later will be modified
     """
@@ -112,7 +118,8 @@ def search_content_outside_table(conf_page_body: str):
 
 
 def replace_signs_html_to_dataframe(conf_page_body: str, req_div_list: list[str]):
-    """Replace certain characters in the html code before converting to dataframe
+    """
+    Replace certain characters in the html code before converting to dataframe
     to avoid losing them
     """
     
@@ -143,7 +150,8 @@ def replace_signs_html_to_dataframe(conf_page_body: str, req_div_list: list[str]
 
 
 def replace_signs_dataframe_to_html(df_data: str, req_div_list: list[str]):
-    """Replace back characters to html code after converting dataframe to html
+    """
+    Replace back characters to html code after converting dataframe to html
     """
     signs_to_replace = {
         DF_FAIL_CHAR: HTML_FAIL_CHAR,
@@ -156,6 +164,7 @@ def replace_signs_dataframe_to_html(df_data: str, req_div_list: list[str]):
         DF_EM_END_CHAR: '</em>',
         DF_DIV_DISPLAY_START_CHAR: '<div style="display: none;">',
         DF_DIV_DISPLAY_END_CHAR: '</div>',
+        DF_TAB_CHAR: '&nbsp;&nbsp;&nbsp;&nbsp;'
     }
     
     if DF_REQUIREMENTS != []:
@@ -175,7 +184,8 @@ def replace_signs_dataframe_to_html(df_data: str, req_div_list: list[str]):
 
 
 def get_pass():
-    """Control echo in the terminal to safely enter the password
+    """
+    Control echo in the terminal to safely enter the password
     """
     print("Password: ", end="", flush=True)
     password = ''
@@ -192,7 +202,8 @@ def get_pass():
 
 
 class Dataloader:
-    """To load data from last created csv report to Confluence use load_data_to_confluence() method
+    """
+    To load data from last created csv report to Confluence use load_data_to_confluence() method
     """
     def __init__(self, url: str, page_id: str, page_title: str, page_space_key: str, csv_folder_name: str, csv_file_name: str, description_only: bool = False):
         self.url = url
@@ -224,11 +235,14 @@ class Dataloader:
         )
 
     def __get_tester_name(self):
-        """Get tester name and surname"""
+        """
+        Get tester name and surname
+        """
         self.__tester_name = self.__confluence.get_user_details_by_username(self.__login, expand=None)['displayName']
     
     def __create_table_header(self, content: str):
-        """Creates table header on given Confluence page
+        """
+        Creates table header on given Confluence page
         """
         table = """<table border="1" class="dataframe">
         <thead>
@@ -248,7 +262,8 @@ class Dataloader:
         return content + DF_TABLE_CHAR
 
     def __update_table_data(self, html_data_frame: pd.DataFrame, csv_data_frame: pd.DataFrame):
-        """Method updates html dataframe with results from csv dataframe and creates temporary 
+        """
+        Method updates html dataframe with results from csv dataframe and creates temporary 
         file with converted dataframe to html code
         """
         
@@ -275,63 +290,35 @@ class Dataloader:
                 continue
             
             # Reading elements from the test docstring
-            
             csv_desc = csv_data_frame.loc[csv_row, "Description"]
-            req_start = csv_desc.find(DOCSTRING_HEADERS[0])
-            name_start = csv_desc.find(DOCSTRING_HEADERS[1])
-            name_end = csv_desc.find(DOCSTRING_HEADERS[2])
-            desc_end = csv_desc.find(DOCSTRING_HEADERS[3])
-            exp_end = csv_desc.find(DOCSTRING_HEADERS[4])
-            setup_end = csv_desc.find(DOCSTRING_HEADERS[5])
-            
-            
+            docstring = {key: "" for key in DOCSTRING_HEADERS}
+            headers_position = [csv_desc.find(DOCSTRING_HEADERS[n]) for n in range(len(DOCSTRING_HEADERS))]
+  
             newline_char_len = len(DF_NEWLINE_CHAR)
-            req_header_len = len(DOCSTRING_HEADERS[0]) + newline_char_len
-            test_name_header_len = len(DOCSTRING_HEADERS[1]) + newline_char_len
-            test_desc_header_len = len(DOCSTRING_HEADERS[2]) + newline_char_len
-            exp_result_header_len = len(DOCSTRING_HEADERS[3]) + newline_char_len
-            test_setup_header_len = len(DOCSTRING_HEADERS[4]) + newline_char_len
-            comments_header_len = len(DOCSTRING_HEADERS[5]) + newline_char_len
+            headers_len = [len(DOCSTRING_HEADERS[n]) + newline_char_len for n in range(len(DOCSTRING_HEADERS))]  
+
+            if -1 in headers_position[1:6]:
+                raise ValueError("One or more of the mandatory headers cannot be found in the test docstring")
+        
+            for n in range(len(headers_position)-2):
+                if headers_position[n] > headers_position[n+1]:
+                    raise ValueError("Wrong order of the headers in the test docstring")            
             
-
-            if name_start == -1 or name_end == -1 or desc_end == -1 or exp_end == -1:
-                raise ValueError("One or more of the mandatory headers could not be found in the test docstring")
-            
-            if req_start != -1:
-                if not (req_start < name_start and name_start < name_end and name_end < desc_end and desc_end < exp_end):
-                    raise ValueError("Wrong order of the headers in the test docstring")
-            else:
-                if not (name_start < name_end and name_end < desc_end and desc_end < exp_end):
-                    raise ValueError("Wrong order of the headers in the test docstring")
-            
-            if req_start != -1:
-                csv_req = csv_desc[req_start + req_header_len:name_start]
-                if csv_req == '':
-                    raise ValueError('"Requirements" cell cannot be empty')
-            
-            csv_test_name = csv_desc[name_start + test_name_header_len:name_end]
-            if csv_test_name == '':
-                raise ValueError('"Test Name" cell cannot be empty')
-
-            csv_test_description = csv_desc[name_end + test_desc_header_len:desc_end]
-            if csv_test_description == '':
-                raise ValueError('"Test Description" cell cannot be empty')
-
-            csv_expected_result = csv_desc[desc_end + exp_result_header_len:exp_end]
-            if csv_expected_result == '':
-                raise ValueError('"Expected Result" cell cannot be empty')
-
-            if setup_end == -1:
-                csv_test_setup = csv_desc[exp_end + test_setup_header_len:-newline_char_len]
-            else:
-                if not exp_end < setup_end:
-                    raise ValueError("Wrong order of the headers in the test docstring")
-                csv_test_setup = csv_desc[exp_end + test_setup_header_len:setup_end]
-            if csv_test_setup == '':
-                raise ValueError('"Test Setup" cell cannot be empty')
-
-            if setup_end != -1:
-                csv_comments = csv_desc[setup_end + comments_header_len:]
+            for n, val in enumerate(DOCSTRING_HEADERS):
+                if headers_position[n] == -1:
+                    continue
+                else:
+                    if val == "[TEST SETUP]":
+                        if headers_position[n+1] == -1:
+                            docstring[val] = csv_desc[headers_position[n] + headers_len[n]:-newline_char_len]
+                        else:
+                            docstring[val] = csv_desc[headers_position[n] + headers_len[n]:headers_position[n+1]]
+                    elif val == "[COMMENTS]":
+                        docstring[val] = csv_desc[headers_position[n] + headers_len[n]:]
+                    else:
+                        docstring[val] = csv_desc[headers_position[n] + headers_len[n]:headers_position[n+1]]
+                if docstring[val] == '':
+                    raise ValueError(f"{val} cell cannot be empty")
 
             test_name_row = search_test_name_html(html_data_frame, csv_name_list[i])
 
@@ -352,31 +339,37 @@ class Dataloader:
 
             if test_name_row == -1:
                 test_name_row = len(html_data_frame)
-                html_data_frame.loc[test_name_row, TABLE_HEADER["Test Name"]] = DF_DIV_DISPLAY_START_CHAR + csv_name_list[i] + DF_DIV_DISPLAY_END_CHAR + csv_test_name
+                html_data_frame.loc[test_name_row, TABLE_HEADER["Test Description"]] = DF_DIV_DISPLAY_START_CHAR + csv_name_list[i] + DF_DIV_DISPLAY_END_CHAR + \
+                                                                                       DF_STRONG_START_CHAR + docstring['[TEST NAME]'] + DF_STRONG_END_CHAR + \
+                                                                                       DF_NEWLINE_CHAR + docstring['[TEST DESCRIPTION]']
                 html_data_frame.loc[test_name_row, TABLE_HEADER["Previous Results"]] = DF_NEWLINE_CHAR
             else:
-                div_index = html_data_frame.loc[test_name_row, TABLE_HEADER["Test Name"]].find(DF_DIV_DISPLAY_END_CHAR)
-                store_html_test_name = html_data_frame.loc[test_name_row, TABLE_HEADER["Test Name"]][:div_index + len(DF_DIV_DISPLAY_END_CHAR)]
-                html_data_frame.loc[test_name_row, TABLE_HEADER["Test Name"]] = store_html_test_name + csv_test_name
+                div_index = html_data_frame.loc[test_name_row, TABLE_HEADER["Test Description"]].find(DF_DIV_DISPLAY_END_CHAR)
+                store_html_test_name = html_data_frame.loc[test_name_row, TABLE_HEADER["Test Description"]][:div_index + len(DF_DIV_DISPLAY_END_CHAR)]
+                html_data_frame.loc[test_name_row, TABLE_HEADER["Test Description"]] = store_html_test_name + \
+                                                                                       DF_STRONG_START_CHAR + docstring['[TEST NAME]'] + DF_STRONG_END_CHAR + \
+                                                                                       DF_NEWLINE_CHAR + docstring['[TEST DESCRIPTION]']
 
-            html_data_frame.loc[test_name_row, TABLE_HEADER["Test Description"]] = csv_test_description
-            html_data_frame.loc[test_name_row, TABLE_HEADER["Expected Result"]] = csv_expected_result
+            # html_data_frame.loc[test_name_row, TABLE_HEADER["Test Description"]] = DOCSTRING_CSV['[TEST DESCRIPTION]']
+            html_data_frame.loc[test_name_row, TABLE_HEADER["Expected Result"]] = docstring['[EXPECTED RESULT]']
+            html_data_frame.loc[test_name_row, TABLE_HEADER["Actual Result"]] = docstring['[ACTUAL RESULT]']
             if not self.description_only:
                 html_data_frame.loc[test_name_row, TABLE_HEADER["Result"]] = csv_status_to_html[csv_status]
             html_data_frame.loc[test_name_row, TABLE_HEADER["Date"]] = get_date()
             html_data_frame.loc[test_name_row, TABLE_HEADER["Tester"]] = self.__tester_name
-            html_data_frame.loc[test_name_row, TABLE_HEADER["Test Setup"]] = csv_test_setup
-            if setup_end != -1:
-                html_data_frame.loc[test_name_row, TABLE_HEADER["Comments"]] = csv_comments
-            if req_start != -1:
-                html_data_frame.loc[test_name_row, TABLE_HEADER["Requirements"]] = "///" + csv_req + "///"
-                DF_REQUIREMENTS.append("///" + csv_req + "///")
+            html_data_frame.loc[test_name_row, TABLE_HEADER["Test Setup"]] = docstring['[TEST SETUP]']
+            if headers_position[-1] != -1:
+                html_data_frame.loc[test_name_row, TABLE_HEADER["Comments"]] = docstring['[COMMENTS]']
+            if headers_position[0] != -1:
+                html_data_frame.loc[test_name_row, TABLE_HEADER["Requirements"]] = "///" + docstring['[REQUIREMENTS]'] + "///"
+                DF_REQUIREMENTS.append("///" + docstring['[REQUIREMENTS]'] + "///")
             
-        html_data_frame = html_data_frame.sort_values(by="Test Name")
+        html_data_frame = html_data_frame.sort_values(by="Test Description")
         html_data_frame.to_html('temp_html.html', index=False)
 
     def __send_updated_data_to_confluence(self, cont_outside_table: str, div_req_list: list[str]):
-        """Method reads data converted from dataframe from html file, merges this code with content 
+        """
+        Method reads data converted from dataframe from html file, merges this code with content 
         outside table saved earlier and updates given Confluence page with merged code
         """
         with open('temp_html.html', 'r') as f:
@@ -396,7 +389,8 @@ class Dataloader:
         )
 
     def get_page_body(self):
-        """Method returns page body of given Confluence page
+        """
+        Method returns page body of given Confluence page
         """
         space_content = self.__confluence.get_space_content(
             space_key=self.page_space_key,
@@ -409,7 +403,8 @@ class Dataloader:
         raise RuntimeError("Page not found")
 
     def load_data_to_confluence(self):
-        """This method do all the job to export data from last created csv report to the Confluence page
+        """
+        This method do all the job to export data from last created csv report to the Confluence page
         """
         confluence_page_body = self.get_page_body()
         div_requirement_list = search_div_requirement(confluence_page_body)
